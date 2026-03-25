@@ -125,6 +125,68 @@ Access control checks in the `security` attribute are always executed before the
 `object` doesn't contain the value submitted by the user, but values currently stored in
 [the persistence layer](../core/state-processors.md).
 
+## Property-Level Security on Write Operations
+
+When `security` is used on `#[ApiProperty]`, the behavior during write operations (PATCH, PUT) differs
+from what you might expect based on the operation-level behavior described above.
+
+During deserialization, `security` on a property is evaluated to build the list of allowed attributes
+**before the object is populated with incoming data**. At that point, no object instance is available
+yet, so the `object` variable is always `null`. This is by design: `security` on `ApiProperty` acts
+as a static, context-free gate — it answers "is this user allowed to interact with this field at all?"
+independently of the current object state.
+
+```php
+<?php
+// api/src/Entity/Book.php
+namespace App\Entity;
+
+use ApiPlatform\Metadata\ApiProperty;
+
+class Book
+{
+    // object is null during PATCH/PUT — use only role checks or user checks here
+    #[ApiProperty(security: "is_granted('ROLE_ADMIN')")]
+    private ?string $adminOnlyField = null;
+}
+```
+
+If your access logic depends on the object's current state (for example, to restrict changes based
+on ownership or a previous value), use `securityPostDenormalize` instead. It runs after the incoming
+data has been applied to the object, and provides both `object` (the updated entity) and
+`previous_object` (a clone of the entity before the write).
+
+When the `securityPostDenormalize` check fails for a property, the value is **silently reverted** to
+its previous value (from `previous_object`) rather than producing an error. The request still
+succeeds for any other properties the user is permitted to modify. To instead return a 403 response,
+set the `throw_on_access_denied` extra property on the operation or on the individual property
+(see the section below).
+
+```php
+<?php
+// api/src/Entity/Book.php
+namespace App\Entity;
+
+use ApiPlatform\Metadata\ApiProperty;
+
+class Book
+{
+    // Combines a static role check (security) with an object-aware ownership check (securityPostDenormalize)
+    #[ApiProperty(
+        security: "is_granted('ROLE_EDITOR')",
+        securityPostDenormalize: "is_granted('FLAVOR_EDIT', object)"
+    )]
+    private ?string $flavor = null;
+}
+```
+
+In this example:
+
+- `security` blocks users without `ROLE_EDITOR` from writing the property entirely (evaluated
+  before denormalization, `object` is `null`)
+- `securityPostDenormalize` further restricts writes to users granted `FLAVOR_EDIT` on the
+  **updated** object (evaluated after denormalization, `object` is the populated entity)
+
 ## Executing Access Control Rules After Denormalization
 
 In some cases, it might be useful to execute a security after the denormalization step. To do so,
