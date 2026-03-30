@@ -206,7 +206,7 @@ Here is an example of functional tests specifying the behavior of
 
 namespace App\Tests;
 
-use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
+use ApiPlatform\Test\ApiTestCase;
 use App\Entity\Book;
 use App\Factory\BookFactory;
 use Zenstruck\Foundry\Test\Factories;
@@ -461,7 +461,7 @@ To use the testing client, your test class must extend the `ApiTestCase` class:
 
 namespace App\Tests;
 
-use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
+use ApiPlatform\Test\ApiTestCase;
 
 class BooksTest extends ApiTestCase
 {
@@ -486,8 +486,8 @@ Json Web Token authentication:
 // api/tests/AbstractTest.php
 namespace App\Tests;
 
-use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
-use ApiPlatform\Symfony\Bundle\Test\Client;
+use ApiPlatform\Test\ApiTestCase;
+use ApiPlatform\Test\Client;
 use Hautelook\AliceBundle\PhpUnit\RefreshDatabaseTrait;
 
 abstract class AbstractTest extends ApiTestCase
@@ -571,7 +571,7 @@ Platform provides convenient PHPUnit assertions dedicated to API testing:
 
 namespace App\Tests;
 
-use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
+use ApiPlatform\Test\ApiTestCase;
 
 class MyTest extends ApiTestCase
 {
@@ -608,7 +608,7 @@ There is also a method to find the IRI matching a given resource and some criter
 
 namespace App\Tests;
 
-use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
+use ApiPlatform\Test\ApiTestCase;
 
 class BooksTest extends ApiTestCase
 {
@@ -633,7 +633,7 @@ documents...) can be used out of the box with the API Platform test client:
 
 namespace App\Tests;
 
-use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
+use ApiPlatform\Test\ApiTestCase;
 
 class BooksTest extends ApiTestCase
 {
