@@ -212,21 +212,36 @@ namespace App\Entity;
 
 use ApiPlatform\Doctrine\Orm\Filter\PartialSearchFilter;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\HeaderParameter;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\QueryParameter;
 
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new GetCollection(),
+        new Get(),
+    ],
+)]
 class Book
 {
+    // Applies to all operations
     #[QueryParameter(key: 'search', filter: new PartialSearchFilter())]
     private string $title = '';
 
-    #[HeaderParameter(key: 'API-Key', description: 'API authentication key')]
-    public string $apiKey = '';
+    // Applies only to GetCollection
+    #[QueryParameter(key: 'name', filter: new PartialSearchFilter(), operations: [new GetCollection()])]
+    public string $name = '';
+
+    // Applies only to GetCollection (Patch is not in the list of operations)
+    #[HeaderParameter(key: 'X-Authorization', operations: [new GetCollection(), new Patch()])]
+    public string $authToken = '';
 }
 ```
 
-Parameters declared on properties are automatically applied to all operations on the resource.
+Parameters declared on properties are automatically applied to all operations on the resource. You
+can restrict a parameter to specific operations using the `operations` argument.
 
 ### Filtering a Single Property
 
